@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Photo Organizing Guide — Asdale Dynamics, LLC</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="brand">
+        <span class="brand-prefix">Asdale Dynamics, LLC</span>
+        <span class="brand-divider">·</span>
+        <span class="brand-name">AI Photo Organizing Guide</span>
+      </div>
+      <a href="https://dylanasdale.github.io" class="brand-link" target="_blank" rel="noopener noreferrer">Visit dylanasdale.github.io</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="toc" id="toc">
+      <h2>Contents</h2>
+      <ul id="toc-list"></ul>
+    </nav>
+
+    <article class="content" id="content">
+      <h1>Organizing Your Digital Photos with Free AI Tools</h1>
+      <p class="subtitle">
+        A beginner-friendly, privacy-first manual for sorting, renaming,
+        deduplicating, and backing up your photos — without ever uploading them
+        to the cloud.
+      </p>
+
+      <div class="privacy-banner">
+        <strong>Privacy First:</strong> Every tool in this guide runs locally on
+        your computer. Your photos never leave your hard drive.
+      </div>
+
+      <section id="about">
+        <h2>About This Guide</h2>
+        <p>
+          Written for anyone with a folder full of photos named like
+          <code>IMG_4829.jpg</code> and no idea where to start. No coding
+          experience required. Everything here is free, local, and private.
+        </p>
+        <p>
+          Created by
+          <strong>Asdale Dynamics, LLC</strong> — beginner-friendly AI
+          education, books, and practical tools.
+        </p>
+      </section>
+
+      <section id="tools">
+        <h2>Tools You'll Need (All Free)</h2>
+        <table>
+          <thead>
+            <tr><th>Tool</th><th>What It Does</th><th>Platform</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ExifTool</td><td>Reads/writes photo metadata (date, camera, GPS)</td><td>Windows, Mac, Linux</td></tr>
+            <tr><td>DigiKam</td><td>Photo management with local AI face detection</td><td>Windows, Mac, Linux</td></tr>
+            <tr><td>PhotoPrism</td><td>Local AI photo organization (via Docker)</td><td>Windows, Mac, Linux</td></tr>
+            <tr><td>fdupes</td><td>Finds duplicate files</td><td>Windows, Mac, Linux</td></tr>
+            <tr><td>rdfind</td><td>Finds duplicate files (alternative)</td><td>Windows, Mac, Linux</td></tr>
+            <tr><td>rsync</td><td>Copies and syncs files for backups</td><td>Mac, Linux (WSL on Windows)</td></tr>
+            <tr><td>BorgBackup</td><td>Encrypted, deduplicated backups</td><td>Mac, Linux (WSL on Windows)</td></tr>
+            <tr><td>Python</td><td>Runs helper scripts included in this guide</td><td>Windows, Mac, Linux</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="step1">
+        <h2>Step 1: Gather Your Photos</h2>
+        <p>
+          Collect all photos into one working folder before organizing.
+          Photos often live in multiple places — phone backups, SD cards,
+          downloads folder, etc.
+        </p>
+        <pre><code>mkdir -p ~/Photos/Organizing</code></pre>
+        <p>Copy all photos into this folder. Don't move them yet — copy them.</p>
+        <pre><code>find ~/Photos/Organizing -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | wc -l</code></pre>
+      </section>
+
+      <section id="step2">
+        <h2>Step 2: Sort by Date</h2>
+        <p>
+          Most photos contain EXIF metadata with the date they were taken.
+          ExifTool can organize them into year/month folders automatically.
+        </p>
+        <pre><code>exiftool -d "%Y/%Y-%m/%Y-%m-%d" -Directory&lt;DateTimeOriginal -r ~/Photos/Organizing</code></pre>
+        <p class="note">
+          Photos without EXIF dates will be skipped. Place them in an
+          <code>Undated/</code> folder for manual review.
+        </p>
+      </section>
+
+      <section id="step3">
+        <h2>Step 3: Sort by Event</h2>
+        <p>
+          Group photos by occasion — birthdays, vacations, holidays. Use tags
+          in DigiKam or create event folders manually.
+        </p>
+        <ul>
+          <li>Import your folder into DigiKam</li>
+          <li>Add tags like "Summer Vacation 2024" or "Sarah's Birthday"</li>
+          <li>Or create folders: <code>mkdir "Birthday Party" "Beach Trip"</code></li>
+        </ul>
+      </section>
+
+      <section id="step4">
+        <h2>Step 4: Sort by People (Face Detection)</h2>
+        <p>
+          Face detection runs entirely on your computer. No facial data is
+          sent anywhere.
+        </p>
+        <ul>
+          <li><strong>DigiKam:</strong> Tools → Maintain → Face Detection</li>
+          <li><strong>PhotoPrism:</strong> Run locally via Docker</li>
+        </ul>
+        <pre><code>docker run --name photoprism -d \
+  -p 2342:2342 \
+  -v ~/Photos:/photos \
+  photoprism/photoprism</code></pre>
+        <p>Then open <code>http://localhost:2342</code> in your browser.</p>
+      </section>
+
+      <section id="step5">
+        <h2>Step 5: Rename Your Files</h2>
+        <p>
+          Replace names like <code>IMG_4829.jpg</code> with meaningful names:
+          <code>2024-03-15_Sarahs-Birthday_001.jpg</code>
+        </p>
+        <pre><code>exiftool '-FileName&lt;DateTimeOriginal' -d "%Y-%m-%d_%%c.%%e" -r ~/Photos/Organizing</code></pre>
+        <p>
+          Or use the included Python script:
+          <code>python3 scripts/rename_photos.py --folder ~/Photos/Organizing --event "Summer Vacation"</code>
+        </p>
+      </section>
+
+      <section id="step6">
+        <h2>Step 6: Remove Duplicates</h2>
+        <p>
+          Find and remove exact duplicate files to save space and reduce clutter.
+        </p>
+        <pre><code>fdupes -r ~/Photos/Organizing</code></pre>
+        <p>
+          Review before deleting. Use <code>fdupes -rd</code> to delete
+          interactively, choosing which copy to keep.
+        </p>
+      </section>
+
+      <section id="step7">
+        <h2>Step 7: Create Backups</h2>
+        <p>
+          Follow the 3-2-1 rule: 3 copies, 2 media types, 1 offsite.
+        </p>
+        <pre><code>rsync -av --delete ~/Photos/Organizing/ /Volumes/ExternalDrive/Photos-Backup/</code></pre>
+        <p>
+          For encrypted backups:
+          <code>borg init --encryption repokey /Volumes/ExternalDrive/Backups/photos</code>
+        </p>
+        <div class="privacy-banner">
+          <strong>Cloud warning:</strong> If you use cloud storage, encrypt
+          before uploading. Never upload unencrypted sensitive photos.
+        </div>
+      </section>
+
+      <section id="checklist">
+        <h2>Printable Workflow Checklist</h2>
+        <p>
+          Print <a href="docs/checklist.md" target="_blank">docs/checklist.md</a>
+          and check off each step as you complete it.
+        </p>
+        <div class="checklist-preview">
+          <div class="check-item"><input type="checkbox" id="c1" /><label for="c1">Install tools and create working folder</label></div>
+          <div class="check-item"><input type="checkbox" id="c2" /><label for="c2">Sort photos by date</label></div>
+          <div class="check-item"><input type="checkbox" id="c3" /><label for="c3">Sort photos by event</label></div>
+          <div class="check-item"><input type="checkbox" id="c4" /><label for="c4">Run local face detection</label></div>
+          <div class="check-item"><input type="checkbox" id="c5" /><label for="c5">Rename files with meaningful names</label></div>
+          <div class="check-item"><input type="checkbox" id="c6" /><label for="c6">Remove duplicate files</label></div>
+          <div class="check-item"><input type="checkbox" id="c7" /><label for="c7">Create and verify backups</label></div>
+        </div>
+      </section>
+
+      <section id="faq">
+        <h2>Troubleshooting & FAQ</h2>
+        <details>
+          <summary><strong>My photos don't have dates. What do I do?</strong></summary>
+          <p>Use the file modification date as a fallback, or organize by event manually.</p>
+        </details>
+        <details>
+          <strong>Can I undo a rename?</strong>
+          <p>ExifTool creates backup files (<code>_original</code>). Restore with:
+            <code>exiftool -restore_original</code></p>
+        </details>
+        <details>
+          <strong>Is face detection safe?</strong>
+          <p>Yes — when it runs locally. DigiKam and PhotoPrism process faces on your computer only.</p>
+        </details>
+        <details>
+          <strong>How often should I back up?</strong>
+          <p>After each organizing session, and weekly thereafter.</p>
+        </details>
+      </section>
+
+      <footer class="site-footer">
+        <p>
+          Created by <strong>Asdale Dynamics, LLC</strong> — Indiana, formed October 2026.<br>
+          Beginner-friendly AI education, books, and practical tools.<br>
+          <a href="https://dylanasdale.github.io" target="_blank" rel="noopener noreferrer">dylanasdale.github.io</a>
+        </p>
+        <p class="license">
+          MIT License &mdash; Copyright (c) 2026 Asdale Dynamics, LLC
+        </p>
+      </footer>
+    </article>
+  </main>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
